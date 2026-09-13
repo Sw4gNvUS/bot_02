@@ -132,7 +132,7 @@ async function startNewGame(interaction) {
 
     activeGames.set(interaction.channelId, { secretNum, lastUserId: null, timeout });
 
-    const content = `<:embet_ptr2:1527972932922507405> **Swag Spooky 🎃 | Sayı Tahmin Oyunu Başladı 🔢** \n<:embet_ptr2:1527972932922507405> Aklımdan 1 ile 100 arasında bir sayı tuttum. **\`/tahminim\` komutunu kullanarak** tahminini yapabilirsin *(örn: /tahminim sayi:38)*\n\n<:dot_2:1483169669643899010> ***__Kural:__** Aynı kişi ard arda iki kez tahmin yapamaz!*`;
+    const content = `## Swag Spooky 🎃 | Sayı Tahmin Oyunu Başladı 🔢 \n<:embet_ptr2:1527972932922507405> Aklımdan 1 ile 100 arasında bir sayı tuttum. **\`/tahminim\` komutunu kullanarak** tahminini yapabilirsin *(örn: /tahminim sayi:38)*\n\n<:dot_2:1483169669643899010> ***__Kural:__** Aynı kişi ard arda iki kez tahmin yapamaz!*`;
     
     if (interaction.isChatInputCommand()) await interaction.reply(content);
     else await interaction.update({ content: content + "\n\n*(Oyun yeniden başlatıldı!)*", components: [] });
