@@ -11,7 +11,57 @@ const client = new Client({
 
 const DB_FILE = './puanlar.json';
 let puanlar = fs.existsSync(DB_FILE) ? JSON.parse(fs.readFileSync(DB_FILE)) : {};
-function savePuanlar() { fs.writeFileSync(DB_FILE, JSON.stringify(puanlar, null, 2)); }
+
+// GitHub API üzerinden puanlar.json dosyasını güncelleyen fonksiyon
+async function savePuanlar() {
+    // 1. Önce Render üzerindeki geçici dosyaya yaz
+    fs.writeFileSync(DB_FILE, JSON.stringify(puanlar, null, 2));
+
+    // 2. Eğer GitHub bilgileri tanımlıysa GitHub deposunu da güncelle
+    const token = process.env.GITHUB_TOKEN;
+    const owner = process.env.GITHUB_OWNER;
+    const repo = process.env.GITHUB_REPO;
+
+    if (!token || !owner || !repo) return;
+
+    try {
+        const contentEncoded = Buffer.from(JSON.stringify(puanlar, null, 2)).toString('base64');
+        const url = `https://api.github.com/repos/${owner}/${repo}/contents/puanlar.json`;
+
+        // Önce dosyanın mevcut SHA kodunu al (GitHub API zorunlu kılar)
+        const getRes = await fetch(url, {
+            headers: { 
+                'Authorization': `Bearer ${token}`, 
+                'User-Agent': 'SwagMiniGames-Bot', 
+                'Accept': 'application/vnd.github+json' 
+            }
+        });
+        
+        let sha = null;
+        if (getRes.ok) {
+            const data = await getRes.json();
+            sha = data.sha;
+        }
+
+        // Güncel içeriği GitHub'a gönder
+        await fetch(url, {
+            method: 'PUT',
+            headers: { 
+                'Authorization': `Bearer ${token}`, 
+                'User-Agent': 'SwagMiniGames-Bot',
+                'Content-Type': 'application/json',
+                'Accept': 'application/vnd.github+json'
+            },
+            body: JSON.stringify({
+                message: 'Otomatik puan güncellemesi (puanlar.json)',
+                content: contentEncoded,
+                sha: sha
+            })
+        });
+    } catch (err) {
+        console.error("GitHub puan senkronizasyon hatası:", err);
+    }
+}
 
 const activeGames = new Map();
 
